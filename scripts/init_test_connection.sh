@@ -16,7 +16,7 @@ echo Test interval: $TEST_INTERVAL
 UPLOAD="-1"
 while true 
 do 
-	/app/bbk --quiet > $FILE
+	/usr/bin/timeout 120 /app/bbk --quiet > $FILE
 	TIMESTAMP=$(date '+%s')
 	UPLOAD=$(awk '{print $3}' $FILE)
 	PING=$(awk '{print $1}' $FILE)
@@ -26,7 +26,7 @@ do
 	do
 		echo "Retry!" | tee -a out.log
 # oh, we're banned. let's use another server..
-		/app/bbk --quiet --server=$(/app/bbk --check-servers |grep -v Network| awk '{print $3}' | shuf -n 1) > $FILE
+		/usr/bin/timeout 120 /app/bbk --quiet --server=$(/app/bbk --check-servers |grep -v Network| awk '{print $3}' | shuf -n 1) > $FILE
 		TIMESTAMP=$(date '+%s')
 		UPLOAD=$(awk '{print $3}' $FILE)
 		PING=$(awk '{print $1}' $FILE)
