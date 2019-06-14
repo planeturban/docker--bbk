@@ -21,9 +21,11 @@ do
 	UPLOAD=$(awk '{print $3}' $FILE)
 	PING=$(awk '{print $1}' $FILE)
 	DOWNLOAD=$(awk '{print $2}' $FILE)
+	RETRIES=0		
 
 	while [ "$UPLOAD" == "-1" ]
 	do
+		RETRIES=$(($RETRIES + 1))
 		echo "Retry!" | tee -a out.log
 # oh, we're banned. let's use another server..
 		/usr/bin/timeout 120 /app/bbk --quiet --server=$(/app/bbk --check-servers |grep -v Network| awk '{print $3}' | shuf -n 1) > $FILE
@@ -36,6 +38,7 @@ do
 	curl -s -i -XPOST http://$INFLUX_HOST:8086/write?db=bbk --data-binary "ping,host=local value=$PING" > /dev/null
 	curl -s -i -XPOST http://$INFLUX_HOST:8086/write?db=bbk --data-binary "download,host=local value=$DOWNLOAD" > /dev/null
 	curl -s -i -XPOST http://$INFLUX_HOST:8086/write?db=bbk --data-binary "upload,host=local value=$UPLOAD" > /dev/null
+	curl -s -i -XPOST http://$INFLUX_HOST:8086/write?db=bbk --data-binary "retries,host=local value=$RETRIES" > /dev/null
 	sleep $TEST_INTERVAL
 
 	UPLOAD="-1"
